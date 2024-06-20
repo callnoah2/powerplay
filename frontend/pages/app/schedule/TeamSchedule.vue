@@ -3,7 +3,10 @@
     <q-page class="q-pa-md">
       <q-card>
         <q-card-section>
-          <div class="text-h6">{{ teamName }}'s Schedule</div>
+          <div class="text-h6">
+            <img :src="teamImage" alt="Team Logo" class="team-logo" />
+            {{ teamName }}'s Schedule
+          </div>
         </q-card-section>
         <q-card-section>
           <vue-cal
@@ -33,11 +36,12 @@ export default {
     return {
       teamId: "",
       teamName: "",
+      teamImage: "", // New data property for team image
       schedule: [],
       events: [],
       currentMonth: format(new Date(), "yyyy-MM"),
-      seasonId: "", // Assuming a season ID is necessary
-      leagueId: "", // Assuming a league ID is necessary
+      seasonId: "", 
+      leagueId: "", 
     };
   },
   created() {
@@ -51,8 +55,16 @@ export default {
           `https://api.powerplay.com/users/me/team`
         );
         const userTeamData = await userTeamResponse.json();
+        /* The response should look like this:
+          {
+            "teamId": "12345",
+            "teamName": "Team Awesome",
+            "teamImage": "https://example.com/path/to/team-logo.png"
+          }
+        */
         this.teamId = userTeamData.teamId;
         this.teamName = userTeamData.teamName;
+        this.teamImage = userTeamData.teamImage; // Assign the team image
 
         // Fetch season information
         await this.fetchSeasonData();
@@ -75,6 +87,21 @@ export default {
           `https://api.powerplay.com/seasons/current`
         );
         const seasonData = await seasonResponse.json();
+        /* The response should look like this:
+          {
+            "id": "67890",
+            "leagues": [
+              {
+                "id": "league1",
+                "teams": [
+                  { "id": "12345", "name": "Team Awesome" },
+                  // other teams...
+                ]
+              },
+              // other leagues...
+            ]
+          }
+        */
         this.seasonId = seasonData.id;
 
         // Assuming the season data includes leagues and teams
@@ -94,6 +121,20 @@ export default {
           `https://api.powerplay.com/teams/${this.teamId}/schedule?month=${month}`
         );
         const data = await response.json();
+        /* The response should look like this:
+          {
+            "schedule": [
+              {
+                "start": "2024-06-01T10:00:00Z",
+                "end": "2024-06-01T12:00:00Z",
+                "event": "Game vs Team B",
+                "description": "Home game at Stadium A",
+                "score": "2-1"
+              },
+              // other games...
+            ]
+          }
+        */
 
         this.schedule.push(...data.schedule);
         this.events.push(
@@ -138,5 +179,10 @@ export default {
 <style scoped>
 .team-schedule {
   box-sizing: 10;
+}
+.team-logo {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
 }
 </style>
